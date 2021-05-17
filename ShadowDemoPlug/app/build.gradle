@@ -1,0 +1,83 @@
+
+
+//这段buildscript配置的dependencies是为了apply plugin: 'com.tencent.shadow.plugin'能找到实现
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath "com.tencent.shadow.core:gradle-plugin:$shadow_version"
+    }
+}
+//先照抄一下pluginnormal
+apply from: '../pluginnormal/build.gradle'
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.example.shadowdemo.host"
+        minSdkVersion 16
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    //Shadow Transform后业务代码会有一部分实际引用runtime中的类
+    //如果不以compileOnly方式依赖，会导致其他Transform或者Proguard找不到这些类
+    compileOnly "com.tencent.shadow.core:runtime:$shadow_version"
+}
+
+apply plugin: 'com.tencent.shadow.plugin'
+
+shadow {
+    packagePlugin {
+        pluginTypes {
+            debug {
+                loaderApkConfig = new Tuple2('sample-loader-debug.apk', ':sample-loader:assembleDebug')
+                runtimeApkConfig = new Tuple2('sample-runtime-debug.apk', ':sample-runtime:assembleDebug')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'sample-plugin'//businessName相同的插件，context获取的Dir是相同的。businessName留空，表示和宿主相同业务，直接使用宿主的Dir。
+                        partKey = 'sample-plugin'
+                        buildTask = 'assembleDebug'
+                        apkName = 'app-debug.apk'
+                        apkPath = 'app/build/outputs/apk/debug/app-debug.apk'
+                    }
+                }
+            }
+
+            release {
+                loaderApkConfig = new Tuple2('sample-loader-release.apk', ':sample-loader:assembleRelease')
+                runtimeApkConfig = new Tuple2('sample-runtime-release.apk', ':sample-runtime:assembleRelease')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'demo'
+                        partKey = 'sample-plugin'
+                        buildTask = 'assembleRelease'
+                        apkName = 'app-release.apk'
+                        apkPath = 'app/build/outputs/apk/release/app-release.apk'
+                    }
+                }
+            }
+        }
+
+        loaderApkProjectPath = 'sample-loader'
+
+        runtimeApkProjectPath = 'sample-runtime'
+
+        version = 4
+        compactVersion = [1, 2, 3]
+        uuidNickName = "1.1.5"
+    }
+}

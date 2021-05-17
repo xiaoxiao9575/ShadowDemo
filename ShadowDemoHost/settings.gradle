@@ -1,0 +1,4 @@
+include ':openlibrary'
+include ':introduce-shadow-lib'
+include ':app'
+rootProject.name = "ShadowDemoHost"

@@ -1,0 +1,6 @@
+include ':pluginnormal'
+include ':pluginlib'
+include ':sample-loader'
+include ':sample-runtime'
+include ':app'
+rootProject.name = "ShadowDemoPlug"
